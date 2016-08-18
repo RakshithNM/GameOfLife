@@ -1,0 +1,36 @@
+.mainBody{
+	position: relative; /*div stays with the document flow*/
+
+}
+.grid{
+	position: absolute; /*relatively positioned to the mainBody class, the outer div*/
+  left: 30%; /*left position of the grid from the margin*/ 
+  margin: 0 auto; /*margin 0 all sides*/
+  cursor: pointer;
+}
+.row-format {
+	float:left;
+	clear: both;
+}
+.cell-format {
+	display: inline-block;
+  	width: 15px;
+  	height: 15px;
+  	float: left;
+  	border-top: 1px solid #ccc;
+  	border-left: 1px solid #ccc;
+  	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+}
+.cell-format {
+	background: #eef;
+}
+.cell-format.alive {
+  background: #333;
+}
+.cell-format:last-child{
+	border-right: 1px solid #ccc;
+}
+.row-format:last-child .cell-format{
+	border-bottom: 1px solid #ccc;
+}
