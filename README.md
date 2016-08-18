@@ -13,7 +13,7 @@
 
 ### Rules :
 
-- The space of interest is an infine(circularly connected) two-dimensional orthogonal grid of square cells, each of which is   in one of two possible states, alive or dead, or "populated" or "unpopulated".
+- The space of interest is an infinite(circularly connected) two-dimensional orthogonal grid of square cells, each of which is   in one of two possible states, alive or dead, or "populated" or "unpopulated".
 
 - Every cell interacts with its eight neighbours, which are the cells that are horizontally, vertically, or diagonally         adjacent.
 
