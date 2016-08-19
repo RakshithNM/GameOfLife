@@ -1,6 +1,6 @@
 # Game-Of-Life
 
-### Features, Rules
+### Features, Rules, Algorithm
 
 ### Features :
 
