@@ -1,3 +1,4 @@
+"use strict";
 var gameOfLife = {
 
 	rowHolder: document.getElementById('rowHolder'), //returns a reference to rowHolder
@@ -6,31 +7,30 @@ var gameOfLife = {
 
 	init : function(){
 		var self = this; //making this available to the sub function within setInterval
-		this.makeGrid(30,30).populateGrid();
+		this.makeGrid(10,10).populateGrid();
 		window.setInterval(function(){
 			self.invokeGeneration(); //call the invokeGenearation method every 66ms
-		},66);
+		},250);
 	},
-	invokeGeneration: function() { //method defined to 
+	invokeGeneration: function() { //method defined to get the next state of the board
 		
-		var nextBoardState = this.boardState; //initially empty or no life or all false, assigned each time on call
-		console.log(this.boardState);
+		var nextBoardState = JSON.parse(JSON.stringify(this.boardState)); //make a deep copy of the array to the nextBoardState
 
 		for(var i = 0; i < this.rows; i++) { //move through the rows of the grid
 
 			for(var j = 0; j < this.cols; j++) { //move through the columns of the grid
 
 				var countNeighbours = this.noOfAliveNeighbours(i,j); //call method to count no, of alive neighbours for a particular cell and return the count
-
-				if(this.boardState[i][j] == true) {
-					if (countNeighbours == 0 || countNeighbours == 1 || countNeighbours > 3) { // check if (count of alive neighbours) = 0,1 for underpopulated generation and (count of alive neighbours) > 3 for overPopulation 
-						nextBoardState[i][j] = false; // kill the cell
-					}
-				} 	else {
-						if (countNeighbours ==3) {  // check if (count of alive neighbours) = 3
-							nextBoardState[i][j] = true;  // give life to the cell
-				       }
-				    }
+				if (this.boardState[i][j] === true) { //while the cell is in the alive state or true
+		            if (countNeighbours == 0 || countNeighbours == 1 || countNeighbours > 3) { //if count=0,1 o greater than 3
+		            	nextBoardState[i][j] = false; //kill, for count=2 and 3, the copying of the array will do. 
+		            }
+		            	
+		        } 	else { //while the cell is dead or false
+		            	if (countNeighbours == 3) {  //if count = 3
+		            		nextBoardState[i][j] = true; //give life on the next board	
+		           		}
+		        	}
 					
 			}
 		}
@@ -41,12 +41,20 @@ var gameOfLife = {
 		var k,l; // variables to traverse through the neighbours of a cell
 		var count = 0; // variable to return the count of the number of variables
 
-		for(k =-1; k<=1;k++) //iterating through the rows of the neighbours
+		for(k=-1; k<=1;k++) //iterating through the rows of the neighbours
+		{
 			for(l=-1; l<=1;l++) //iterating through the columns of the neighbours
+			{ 
 				if(k || l) //perform the count only if either of k or l is 1 or when both are not 0, not pointing to the cell
-					if(this.boardState[this.circularX(i,k)][this.circularY(i,k)]) // making the index of the two dimensional array toroidal when the cell is at the boundary, stiching together the ends of the grid from right to left and top to bottom
-					count++; // increment the count 
-				return count;  
+				{
+					if(this.boardState[this.circularX(i,k)][this.circularY(j,l)]) // making the index of the two dimensional array toroidal when the cell is at the boundary, stiching together the ends of the grid from right to left and top to bottom
+					{
+						count++; // increment the count 
+					}
+				}
+			}
+		}
+		return count;  
 	},
 	circularX: function stitchX(m,n){ // method to stitch the right and left boundaries of the grid together
 		m += n; //iterate through the neighbours
@@ -102,12 +110,14 @@ var gameOfLife = {
 		}
 	},
 	populateGrid: function(){
-		var i,j = 0; //variables to iterate throughout the grid
+
+		var i = 0, 
+			j = 0; //variables to iterate throughout the grid
 
 		for(i = 0; i< this.rows; i++) { //move through a row on each iteration
 			for(j = 0;j< this.cols; j++) { // move through a column on each iteration
 				var r = Math.random(); //generate a random number
-					if(r > 0.8) { //20% percent probabilty of evaluating to true
+					if(r > 0.7) { //20% percent probabilty of evaluating to true
 						this.giveLife(i,j); //call method to change the formating of the cell
 					};
 			}
@@ -121,13 +131,13 @@ var gameOfLife = {
 		return this;
 	},
 	getCell: function(i,j){
-		var  cell = document.querySelectorAll('.row-format:nth-child('+(i + 1)+') .cell-format:nth-child('+(j + 1)+')'); //selects an cell that is an nth-child from all cells with the classes 
+		var  cell = document.querySelectorAll('.row-format:nth-child('+(i+1)+') .cell-format:nth-child('+(j+1)+')') || false; //selects an cell that is an nth-child from all cells with the classes 
 		return cell[0];
 	},
 		
 };
 
-gameOfLife.rowHolder.addEventListener('click',function(){ //
+gameOfLife.rowHolder.addEventListener('click',function(){ 
 	gameOfLife.init();
 },false);
 gameOfLife.init();
