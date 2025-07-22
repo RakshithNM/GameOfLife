@@ -1,17 +1,19 @@
 body {
   display: flex;
-  justify-content: center;
   flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
   background: #0D0F12;
   color: #F1F3F5;
+  margin: 0;
+  height: 100vh;
 }
 .controls {
   font-family: Fira Sans;
 }
 .grid{
   width: max-content;
-  margin: 20px auto;  /*center the grid*/
+  margin: 10px auto;  /*center the grid*/
   cursor: pointer;
 }
 .row-format {
@@ -23,9 +25,10 @@ body {
   width: 10px;
   height: 10px;
   float: left;
-  border-top: 1px solid #000;
-  border-left: 1px solid #000;
-  background: #343A40;
+  border-radius: 2px;
+  border-top: 1px solid #114678;
+  border-left: 1px solid #114678;
+  background: #16191D;
   transition: all 0.3s ease-in-out 0.1s; /*for smooth growing*/
   -webkit-transition: all 0.3s ease-in-out 0.1s; /*for smooth growing*/
   -moz-transition: all 0.3s ease-in-out 0.1s;
@@ -41,29 +44,22 @@ body {
   opacity: 0.5;
 }
 .cell-format:last-child { /*The border to the rightmost elements*/
-	border-right: 1px solid #000;
+	border-right: 1px solid #114678;
 }
 .row-format:last-child .cell-format { /*The border to the bottom most element*/
-	border-bottom: 1px solid #000;
+	border-bottom: 1px solid #114678;
 }
 h1 {
   font-family: 'Poiret One', serif;
   font-size: 40px;
+  margin-top: 10px;
 }
 .documentation { /*formatting for the text space one*/
   font-family: 'Poiret One', serif;
-  font-size: 20px;
+  font-size: 16px;
+  margin-top: 8px;
 }
 button {
   font-family: Fira Sans;
+  background: #12B886;
 }
-#placeholder {
-  display: flex;
-  justify-content: center;
-  width: 1000px;
-  height: auto;
-  font-family: Fira Sans;
-  font-size: 20px;
-  border: 1px dotted black;
-}
-

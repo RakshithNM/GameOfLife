@@ -21,7 +21,6 @@ const gameOfLife = {
     this.populateGrid(this.density);
     this.drawOnGrid();
     this.resume();
-    this.updatePlaceholderVisibility();
   },
 
   resume: function () {
@@ -38,7 +37,6 @@ const gameOfLife = {
     };
 
     this.animationFrameId = requestAnimationFrame(loop);
-    this.updatePlaceholderVisibility();
   },
 
   pause: function () {
@@ -46,7 +44,6 @@ const gameOfLife = {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
       this.lastFrameTime = 0;
-      this.updatePlaceholderVisibility();
     }
   },
 
@@ -136,18 +133,9 @@ const gameOfLife = {
   drawOnGrid: function () {
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.cols; j++) {
-        const cell = this.getCell(i, j);
+        const cell = this.cellElements[i][j];
         cell.classList.toggle('alive', this.boardState.lives[i][j]);
       }
     }
-  },
-
-  getCell: function (i, j) {
-    return this.cellElements[i][j];
-  },
-
-  updatePlaceholderVisibility: function () {
-    const placeholder = document.getElementById('placeholder');
-    placeholder.style.display = this.animationFrameId ? 'none' : 'block';
   }
 };
