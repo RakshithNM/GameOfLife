@@ -25,7 +25,7 @@ body {
   float: left;
   border-top: 1px solid #000;
   border-left: 1px solid #000;
-  background: #d3d3d3;
+  background: #343A40;
   transition: all 0.3s ease-in-out 0.1s; /*for smooth growing*/
   -webkit-transition: all 0.3s ease-in-out 0.1s; /*for smooth growing*/
   -moz-transition: all 0.3s ease-in-out 0.1s;
