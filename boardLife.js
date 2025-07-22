@@ -1,123 +1,153 @@
 "use strict";
-const row = 10;
-const column = 10;
 
-var gameOfLife = {
-  rowHolder: document.getElementById('rowHolder'), //returns a reference to rowHolder
-  boardState: {
-    "lives": []
-  }, //All the cells on the board are dead
-  init : function(){
-    this.makeGrid(row, column).populateGrid();
-    window.setInterval(() => {
-      this.invokeGeneration(); //call the invokeGenearation method every 66ms
-    },250);
+const gameOfLife = {
+  rowHolder: document.getElementById('rowHolder'),
+  rows: 35,
+  cols: 35,
+  density: 0.3,
+  interval: 100,
+  boardState: { lives: [] },
+  cellElements: [],
+  animationFrameId: null,
+  lastFrameTime: 0,
+
+  start: function () {
+    this.rows = parseInt(document.getElementById('rowsInput').value);
+    this.cols = parseInt(document.getElementById('colsInput').value);
+    this.density = parseFloat(document.getElementById('densityInput').value);
+    this.interval = parseInt(document.getElementById('intervalInput').value);
+
+    this.makeGrid(this.rows, this.cols);
+    this.populateGrid(this.density);
+    this.drawOnGrid();
+    this.resume();
+    this.updatePlaceholderVisibility();
   },
-  invokeGeneration: function() { //method defined to get the next state of the board
-    var nextBoardState = JSON.parse(JSON.stringify(this.boardState?.lives)); //make a deep copy of the array to the nextBoardState
-    for(var i = 0; i < this.rows; i++) { //move through the rows of the grid
-      for(var j = 0; j < this.cols; j++) { //move through the columns of the grid
-        var countNeighbours = this.noOfAliveNeighbours(i,j); //call method to count no, of alive neighbours for a particular cell and return the count
-        if (this.boardState?.lives[i][j] === true) { //while the cell is in the alive state or true
-          if (countNeighbours == 0 || countNeighbours == 1 || countNeighbours > 3) { //if count=0,1 o greater than 3
-            nextBoardState[i][j] = false; //kill, for count=2 and 3, the copying of the array will do.
-          }
-        } else { //while the cell is dead or false
-          if (countNeighbours == 3) {  //if count = 3
-            nextBoardState[i][j] = true; //give life on the next board
-          }
+
+  resume: function () {
+    if (this.animationFrameId) {
+      return;
+    }
+
+    const loop = (timestamp) => {
+      if (!this.lastFrameTime || timestamp - this.lastFrameTime >= this.interval) {
+        this.invokeGeneration();
+        this.lastFrameTime = timestamp;
+      }
+      this.animationFrameId = requestAnimationFrame(loop);
+    };
+
+    this.animationFrameId = requestAnimationFrame(loop);
+    this.updatePlaceholderVisibility();
+  },
+
+  pause: function () {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+      this.lastFrameTime = 0;
+      this.updatePlaceholderVisibility();
+    }
+  },
+
+  step: function () {
+    this.invokeGeneration();
+  },
+
+  invokeGeneration: function () {
+    const next = this.boardState.lives.map(row => [...row]);
+
+    for (let i = 0; i < this.rows; i++) {
+      for (let j = 0; j < this.cols; j++) {
+        const count = this.noOfAliveNeighbours(i, j);
+        const alive = this.boardState.lives[i][j];
+        const willLive = alive ? (count === 2 || count === 3) : (count === 3);
+
+        if (willLive !== alive) {
+          next[i][j] = willLive;
+          const cell = this.cellElements[i][j];
+          cell.classList.toggle('alive', willLive);
         }
       }
     }
-    this.boardState.lives = nextBoardState; //assign nextBoardState to boardState before drawing
-    this.drawOnGrid(); //call the drawing method;
+
+    this.boardState.lives = next;
   },
-  noOfAliveNeighbours: function(i,j){ //method to count the no of alive neighbours in the particular generation
-    var k,l; // variables to traverse through the neighbours of a cell
-    var count = 0; // variable to return the count of the number of variables
-    for(k=-1; k<=1;k++) { //iterating through the rows of the neighbours
-      for(l=-1; l<=1;l++) { //iterating through the columns of the neighbours
-        if(k || l) { //perform the count only if either of k or l is 1 or when both are not 0, not pointing to the cell
-          if(this.boardState?.lives[this.circularX(i,k)][this.circularY(j,l)]) { // making the index of the two dimensional array toroidal when the cell is at the boundary, stiching together the ends of the grid from right to left and top to bottom
-            count++; // increment the count
-          }
+
+  noOfAliveNeighbours: function (x, y) {
+    let count = 0;
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        if (dx !== 0 || dy !== 0) {
+          const i = (x + dx + this.rows) % this.rows;
+          const j = (y + dy + this.cols) % this.cols;
+          if (this.boardState.lives[i][j]) count++;
         }
       }
     }
     return count;
   },
-  circularX: function stitchX(m,n){ // method to stitch the right and left boundaries of the grid together
-    m += n; //iterate through the neighbours
-    while (m < 0) m += this.cols; //if the cell index goes outside the extreme left, the cell near the extreme right is referenced as neighbour
-    while (m >= this.cols) m-= this.cols; //if the cell index goes outside the extreme right, the cell near the extreme left is referenced as neighbour
-    return m; //return the neighbour index
-  },
-  circularY: function stitchY(m,n){ //method to stitch the top and bottom boundaries of the grid together
-    m += n; //iterate through the neighbours
-    while(m < 0) m += this.rows; //if the cell index goes outside the extreme top, the cell near the extreme bottom is referenced as neighbour
-    while(m > this.rows) m -= this.rows; //if the cell index goes outside the extreme bottom, the cell near the extreme top is referenced as neighbour
-    return m; //return the neighbour index
-  },
-  makeGrid: function(rows,cols) { //method to make the
-    var i = 0, j = 0;
-    this.rows = rows;
-    this.cols = cols;
-    this.rowHolder.innerHTML = ''; //initialise the rowHolder with empty string
-    this.boardState = {
-      "lives": []
-    }; // Empty array for the complete grid, 2D
-    for(i = 0; i < rows; i++) { //move through the rows of the grid
-      var row = document.createElement('div'); //for each i->rows create a div
-      row.className = 'row-format'; //and give the className
-      var boardRow = []; //Empty array for a row in the grid, 1D
-      for(j = 0; j < cols; j++) { //move through the columns of the grid
-        var cell = document.createElement('div'); //for each j->cols create a cell
-        cell.className = 'cell-format'; //and give the className
-        row.appendChild(cell); //append each cell to the row for each j->cols
-        boardRow.push(false); //designing the grid structure with killed lives or cells
+
+  makeGrid: function (rows, cols) {
+    this.rowHolder.innerHTML = '';
+    this.boardState.lives = [];
+    this.cellElements = [];
+
+    for (let i = 0; i < rows; i++) {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'row-format';
+      const rowState = [];
+      const cellRow = [];
+
+      for (let j = 0; j < cols; j++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell-format';
+        cell.dataset.row = i;
+        cell.dataset.col = j;
+        cell.addEventListener('click', (e) => this.toggleCell(e));
+        rowEl.appendChild(cell);
+        rowState.push(false);
+        cellRow.push(cell);
       }
-      this.rowHolder.appendChild(row); //adding each row to the rowHolder property
-      this.boardState?.lives.push(boardRow); //push the boardRow to boardState for each i->rows
+
+      this.rowHolder.appendChild(rowEl);
+      this.boardState.lives.push(rowState);
+      this.cellElements.push(cellRow)
     }
-    return this;
   },
-  drawOnGrid: function(){ //method to draw cell on grid based  on boardState
-    for (var i = 0; i < this.rows; i++) { //move through each row
-      for (var j = 0; j < this.cols; j++ ) { //move through each column
-        var toDrawCell = this.getCell(i,j) //get a cell in a particular row based on i,j
-        if(this.boardState?.lives[i][j]) { //evaluates to true or if there is life
-          toDrawCell.classList.add('alive'); //add the alive class to the cell returned by getCell
-        } else {  //if false or no life
-          toDrawCell.classList.remove('alive'); //remove the alive class from the cell
+
+  populateGrid: function (density) {
+    for (let i = 0; i < this.rows; i++) {
+      for (let j = 0; j < this.cols; j++) {
+        if (Math.random() < density) {
+          this.boardState.lives[i][j] = true;
         }
       }
     }
   },
-  populateGrid: function(){
-    var i = 0, j = 0; //variables to iterate throughout the grid
-    for(i = 0; i< this.rows; i++) { //move through a row on each iteration
-      for(j = 0;j< this.cols; j++) { // move through a column on each iteration
-        var r = Math.random(); //generate a random number
-        if(r > 0.7) { //20% percent probabilty of evaluating to true
-          this.giveLife(i,j); //call method to change the formating of the cell
-        };
-      }
 
+  toggleCell: function (e) {
+    const i = parseInt(e.target.dataset.row);
+    const j = parseInt(e.target.dataset.col);
+    this.boardState.lives[i][j] = !this.boardState.lives[i][j];
+    e.target.classList.toggle('alive');
+  },
+
+  drawOnGrid: function () {
+    for (let i = 0; i < this.rows; i++) {
+      for (let j = 0; j < this.cols; j++) {
+        const cell = this.getCell(i, j);
+        cell.classList.toggle('alive', this.boardState.lives[i][j]);
+      }
     }
   },
-  giveLife: function(i,j){ //method to give life(add color) to the cell
-    var cell = this.getCell(i,j); //method to target a particular cell with classes row-format and cell-format
-    this.boardState.lives[i][j] = true; //make the particular cell 1 or give life
-    cell.classList.add('alive'); //add the alive class to the classList of the cell
-    return this;
-  },
-  getCell: function(i,j){
-    var cell = document.querySelectorAll('.row-format:nth-child('+(i+1)+') .cell-format:nth-child('+(j+1)+')') || false; //selects an cell that is an nth-child from all cells with the classes
-    return cell[0];
-  },
-};
 
-gameOfLife.rowHolder.addEventListener('click',function(){
-  gameOfLife.init();
-},false);
-gameOfLife.init();
+  getCell: function (i, j) {
+    return this.cellElements[i][j];
+  },
+
+  updatePlaceholderVisibility: function () {
+    const placeholder = document.getElementById('placeholder');
+    placeholder.style.display = this.animationFrameId ? 'none' : 'block';
+  }
+};
