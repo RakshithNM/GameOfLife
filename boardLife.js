@@ -7,6 +7,7 @@ const gameOfLife = {
   density: 0.3,
   interval: 100,
   boardState: { lives: [] },
+  heatMap: [],
   cellElements: [],
   animationFrameId: null,
   lastFrameTime: 0,
@@ -18,6 +19,7 @@ const gameOfLife = {
     this.interval = parseInt(document.getElementById('intervalInput').value);
 
     this.makeGrid(this.rows, this.cols);
+    this.heatMap = Array.from({ length: this.rows }, () => Array(this.cols).fill(0));
     this.populateGrid(this.density);
     this.drawOnGrid();
     this.resume();
@@ -60,10 +62,18 @@ const gameOfLife = {
         const alive = this.boardState.lives[i][j];
         const willLive = alive ? (count === 2 || count === 3) : (count === 3);
 
-        if (willLive !== alive) {
-          next[i][j] = willLive;
-          const cell = this.cellElements[i][j];
-          cell.classList.toggle('alive', willLive);
+        next[i][j] = willLive;
+
+        const cell = this.cellElements[i][j];
+        if (willLive) {
+          this.heatMap[i][j] = Math.min(this.heatMap[i][j] + 1, 255);
+          cell.classList.add('alive');
+          cell.style.backgroundColor = '#08C';
+        } else {
+          cell.classList.remove('alive');
+
+          const intensity = this.heatMap[i][j] / 255;
+          cell.style.backgroundColor = `rgba(255, 0, 0, ${intensity})`;
         }
       }
     }
@@ -109,7 +119,7 @@ const gameOfLife = {
 
       this.rowHolder.appendChild(rowEl);
       this.boardState.lives.push(rowState);
-      this.cellElements.push(cellRow)
+      this.cellElements.push(cellRow);
     }
   },
 
@@ -127,14 +137,21 @@ const gameOfLife = {
     const i = parseInt(e.target.dataset.row);
     const j = parseInt(e.target.dataset.col);
     this.boardState.lives[i][j] = !this.boardState.lives[i][j];
+    if (this.boardState.lives[i][j]) {
+      this.heatMap[i][j] = Math.min(this.heatMap[i][j] + 1, 255);
+    }
     e.target.classList.toggle('alive');
+    e.target.style.backgroundColor = `rgba(255, 0, 0, ${this.heatMap[i][j] / 255})`;
   },
 
   drawOnGrid: function () {
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.cols; j++) {
         const cell = this.cellElements[i][j];
-        cell.classList.toggle('alive', this.boardState.lives[i][j]);
+        const isAlive = this.boardState.lives[i][j];
+        cell.classList.toggle('alive', isAlive);
+        const intensity = this.heatMap[i][j] / 255;
+        cell.style.backgroundColor = `rgba(255, 0, 0, ${intensity})`;
       }
     }
   }
