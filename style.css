@@ -9,7 +9,7 @@ body {
   height: 100vh;
 }
 .controls {
-  font-family: Fira Sans;
+  font-family: var(--font-rounded-sans);
 }
 .grid{
   width: max-content;
@@ -50,16 +50,16 @@ body {
 	border-bottom: 1px solid #114678;
 }
 h1 {
-  font-family: 'Poiret One', serif;
+  font-family: var(--font-geometric-humanist);
   font-size: 40px;
   margin-top: 10px;
 }
-.documentation { /*formatting for the text space one*/
-  font-family: 'Poiret One', serif;
+.documentation {
+  font-family: var(--font-industrial);
   font-size: 16px;
   margin-top: 8px;
 }
 button {
-  font-family: Fira Sans;
+  font-family: var(--font-rounded-sans);
   background: #12B886;
 }
